@@ -26,7 +26,7 @@ public class Repository {
     MutableLiveData<List<Cerveza>> listMutableLiveDataCerveza = new MutableLiveData<>();
     MutableLiveData<List<Venta>> listMutableLiveDataVentas = new MutableLiveData<>();
     MutableLiveData<Long> idInsertBeer = new MutableLiveData<>();
-    MutableLiveData<String> url = new MutableLiveData<>();
+    MutableLiveData<Cerveza> devolverBeer = new MutableLiveData<>();
     Cerveza cervezaConcreta;
     Cerveza savedBeer;
 
@@ -46,7 +46,7 @@ public class Repository {
         call.enqueue(new Callback<Cerveza>() {
             @Override
             public void onResponse(Call<Cerveza> call, Response<Cerveza> response) {
-                url.postValue(response.body().getUrl());
+                devolverBeer.postValue(response.body());
             }
 
             @Override
@@ -55,6 +55,9 @@ public class Repository {
         });
     }
 
+    public MutableLiveData<Cerveza> getUrl() {
+        return devolverBeer;
+    }
 
     public void getAllVentas(){
         Call<List<Venta>> call = ventasClient.getVenta();

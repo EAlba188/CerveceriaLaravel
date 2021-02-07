@@ -73,14 +73,16 @@ public class VentasAdapter extends RecyclerView.Adapter<VentasAdapter.MyViewHold
         ViewModel vm = new ViewModelProvider((ViewModelStoreOwner) context).get(ViewModel.class);
         vm.getCervezaConcreta(lista.get(position).getIdCerveza());
 
-        String url;
 
-        vm.getUrl().observe((LifecycleOwner) context, new Observer<String>() {
+
+        vm.getUrl().observe((LifecycleOwner) context, new Observer<Cerveza>() {
             @Override
-            public void onChanged(String s) {
-                Glide.with(application)
-                        .load(s)
-                        .into(holder.pic);
+            public void onChanged(Cerveza cerveza) {
+                if(cerveza.getId()==lista.get(position).getIdCerveza()){
+                    Glide.with(application)
+                            .load(cerveza.getUrl())
+                            .into(holder.pic);
+                }
             }
         });
 

@@ -47,7 +47,7 @@ public class ViewModel extends AndroidViewModel {
         return repository.getListMutableLiveDataVentas();
     }
 
-    public MutableLiveData<String> getUrl() {
+    public MutableLiveData<Cerveza> getUrl() {
         return repository.getUrl();
     }
 
