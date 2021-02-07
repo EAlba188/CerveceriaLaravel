@@ -16,6 +16,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.lifecycle.LifecycleOwner;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelStoreOwner;
 import androidx.navigation.NavController;
@@ -25,28 +27,28 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.example.cervecerialaravel.R;
 import com.example.cervecerialaravel.entity.Cerveza;
+import com.example.cervecerialaravel.entity.Venta;
 import com.example.cervecerialaravel.viewmodel.ViewModel;
 
 import java.util.List;
 
-public class RecyclerViewAdapter extends  RecyclerView.Adapter<RecyclerViewAdapter.MyViewHolder> {
+public class VentasAdapter extends RecyclerView.Adapter<VentasAdapter.MyViewHolder> {
 
 
-    private List<Cerveza> lista;
+    private List<Venta> lista;
     private Context context;
     private Application application;
-    private ViewModel vm;
 
 
 
-    public RecyclerViewAdapter(Context context, Application application){
+    public VentasAdapter(Context context, Application application){
         this.context=context;
         this.application = application;
 
 
     }
 
-    public void setMainList(List<Cerveza> lista){
+    public void setMainList(List<Venta> lista){
         this.lista = lista;
     }
 
@@ -57,27 +59,33 @@ public class RecyclerViewAdapter extends  RecyclerView.Adapter<RecyclerViewAdapt
 
     @NonNull
     @Override
-    public RecyclerViewAdapter.MyViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.row, parent, false);
-        return new RecyclerViewAdapter.MyViewHolder(view);
+    public VentasAdapter.MyViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.rowventas, parent, false);
+        return new VentasAdapter.MyViewHolder(view);
     }
 
     @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
-    public void onBindViewHolder(@NonNull RecyclerViewAdapter.MyViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull VentasAdapter.MyViewHolder holder, int position) {
+        holder.idVenta.setText("Id Venta: "+lista.get(position).getId());
+        holder.idCerveza.setText("Id Cerveza: "+lista.get(position).getIdCerveza());
+
+        ViewModel vm = new ViewModelProvider((ViewModelStoreOwner) context).get(ViewModel.class);
+        vm.getCervezaConcreta(lista.get(position).getIdCerveza());
+
+        String url;
+
+        vm.getUrl().observe((LifecycleOwner) context, new Observer<String>() {
+            @Override
+            public void onChanged(String s) {
+                Glide.with(application)
+                        .load(s)
+                        .into(holder.pic);
+            }
+        });
 
 
-        holder.brand.setText(lista.get(position).getBrand());
-        holder.price.setText(lista.get(position).getPrice()+"");
-        holder.type.setText(lista.get(position).getType());
-        holder.amount.setText(lista.get(position).getAmount()+"");
-        holder.location.setText(lista.get(position).getLocation());
 
-        //Log.v("asd", lista.get(position).toString());
-
-        Glide.with(application)
-                .load(lista.get(position).getUrl())
-                .into(holder.pic);
 
         holder.lout.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -87,26 +95,18 @@ public class RecyclerViewAdapter extends  RecyclerView.Adapter<RecyclerViewAdapt
                 ViewModel vm = new ViewModelProvider((ViewModelStoreOwner) context).get(ViewModel.class);
                 NavController navController = Navigation.findNavController(v);
 
-                builder.setPositiveButton("Editar", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        vm.setSavedBeer(lista.get(position));
-                        navController.navigate(R.id.editFragment);
-                    }
-                });
+
                 builder.setNeutralButton("Borrar", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        vm.deleteCerveza(lista.get(position).getId());
-                        navController.navigate(R.id.firstFragment);
+                        vm.borrarVenta(lista.get(position).getId());
+                        navController.navigate(R.id.ventasFragment);
                     }
                 });
-
-                builder.setNegativeButton("Vender", new DialogInterface.OnClickListener() {
+                builder.setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        vm.vender(lista.get(position).getId());
-                        navController.navigate(R.id.firstFragment);
+
                     }
                 });
 
@@ -114,8 +114,6 @@ public class RecyclerViewAdapter extends  RecyclerView.Adapter<RecyclerViewAdapt
                 builder.show();
             }
         });
-
-
 
     }
 
@@ -126,24 +124,19 @@ public class RecyclerViewAdapter extends  RecyclerView.Adapter<RecyclerViewAdapt
 
 
     public class MyViewHolder extends  RecyclerView.ViewHolder {
-        TextView brand;
-        TextView price;
-        TextView amount;
-        TextView type;
-        TextView location;
+        TextView idVenta;
+        TextView idCerveza;
         ImageView pic;
         ConstraintLayout lout;
 
         public MyViewHolder(View view) {
             super(view);
-            amount = view.findViewById(R.id.tvAmount);
-            price = view.findViewById(R.id.tvPrice);
-            brand = view.findViewById(R.id.tvBrand);
-            type = view.findViewById(R.id.tvType);
-            location = view.findViewById(R.id.tvLocation);
-            pic = view.findViewById(R.id.ivPic);
-            lout = view.findViewById(R.id.rowId);
+            idVenta = view.findViewById(R.id.tvIdVenta);
+            idCerveza = view.findViewById(R.id.tvIdCerveza);
+            pic = view.findViewById(R.id.ivVentas);
+            lout = view.findViewById(R.id.ventasLayoutID);
         }
 
     }
+
 }

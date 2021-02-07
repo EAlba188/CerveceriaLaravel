@@ -43,6 +43,16 @@ public class Cerveza {
         this.location = location;
     }
 
+    public Cerveza(){
+        this.id = id;
+        this.picture = null;
+        this.brand = null;
+        this.price = 0;
+        this.type = null;
+        this.amount = 0;
+        this.location = null;
+    }
+
     @Override
     public String toString() {
         return "Cerveza{" +

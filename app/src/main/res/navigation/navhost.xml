@@ -16,6 +16,9 @@
         <action
             android:id="@+id/action_firstFragment_to_editFragment"
             app:destination="@id/editFragment" />
+        <action
+            android:id="@+id/action_firstFragment_to_ventasFragment"
+            app:destination="@id/ventasFragment" />
     </fragment>
     <fragment
         android:id="@+id/insertFragment"
@@ -27,4 +30,9 @@
         android:name="com.example.cervecerialaravel.EditFragment"
         android:label="fragment_edit"
         tools:layout="@layout/fragment_edit" />
+    <fragment
+        android:id="@+id/ventasFragment"
+        android:name="com.example.cervecerialaravel.VentasFragment"
+        android:label="fragment_ventas"
+        tools:layout="@layout/fragment_ventas" />
 </navigation>

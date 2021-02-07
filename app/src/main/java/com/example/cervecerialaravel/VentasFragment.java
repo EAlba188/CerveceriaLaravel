@@ -19,89 +19,75 @@ import android.view.ViewGroup;
 import android.widget.Button;
 
 import com.example.cervecerialaravel.entity.Cerveza;
+import com.example.cervecerialaravel.entity.Venta;
 import com.example.cervecerialaravel.view.RecyclerViewAdapter;
+import com.example.cervecerialaravel.view.VentasAdapter;
 import com.example.cervecerialaravel.viewmodel.ViewModel;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class FirstFragment extends Fragment {
-    public RecyclerViewAdapter adapter;
-    private static com.example.cervecerialaravel.viewmodel.ViewModel viewModel;
-    private List<Cerveza> lista = new ArrayList<>();
-    private Button insertarCerveza;
-    private Button btVerVentas;
 
-    private NavController navController;
+public class VentasFragment extends Fragment {
+    public VentasAdapter adapter;
+    private Button btAtras;
+    private ViewModel viewModel;
+    private List<Venta> lista2 = new ArrayList<>();
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_first, container, false);
+        return inflater.inflate(R.layout.fragment_ventas, container, false);
     }
+
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        insertarCerveza = view.findViewById(R.id.addBeer);
 
-        navController = Navigation.findNavController(view);
-        btVerVentas = view.findViewById(R.id.btVerVentas);
+        btAtras = view.findViewById(R.id.btAtras);
 
-        insertarCerveza.setOnClickListener(new View.OnClickListener() {
+        NavController navController = Navigation.findNavController(view);
+
+
+        btAtras.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                navController.navigate(R.id.insertFragment);
+                navController.navigate(R.id.firstFragment);
+
             }
         });
 
 
         viewModel = new ViewModelProvider(this).get(ViewModel.class);
-        viewModel.getAllCervezas();
-        viewModel.getListMutableLiveDataCerveza().observe(getActivity(), new Observer<List<Cerveza>>() {
+        viewModel.getAllVentas();
+        viewModel.getListMutableLiveDataVentas().observe(getActivity(), new Observer<List<Venta>>() {
             @Override
-            public void onChanged(List<Cerveza> cervezas) {
+            public void onChanged(List<Venta> ventas) {
 
-                lista.clear();
-                lista.addAll(cervezas);
+                lista2.clear();
+                lista2.addAll(ventas);
                 initRecyclerView(view);
 
             }
         });
 
-        btVerVentas.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                navController.navigate(R.id.ventasFragment);
-            }
-        });
-
-
 
     }
+
+
 
     private void initRecyclerView(View v) {
 
 
-        RecyclerView recyclerView = v.findViewById(R.id.recyclerView);
+        RecyclerView recyclerView = v.findViewById(R.id.recyclerVentas);
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         recyclerView.addItemDecoration(new DividerItemDecoration(getActivity(), DividerItemDecoration.VERTICAL));
-        adapter = new RecyclerViewAdapter(getActivity(), getActivity().getApplication());
-        adapter.setMainList(lista);
+        adapter = new VentasAdapter(getActivity(), getActivity().getApplication());
+        adapter.setMainList(lista2);
         recyclerView.setAdapter(adapter);
 
 
-
-
-
     }
-
-
-
-
-
-
-
-
 }
