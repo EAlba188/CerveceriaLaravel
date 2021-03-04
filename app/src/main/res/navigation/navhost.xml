@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/navhost"
-    app:startDestination="@id/firstFragment">
+    app:startDestination="@id/loginFragment">
 
     <fragment
         android:id="@+id/firstFragment"
@@ -35,4 +35,25 @@
         android:name="com.example.cervecerialaravel.VentasFragment"
         android:label="fragment_ventas"
         tools:layout="@layout/fragment_ventas" />
+    <fragment
+        android:id="@+id/loginFragment"
+        android:name="com.example.cervecerialaravel.LoginFragment"
+        android:label="fragment_login"
+        tools:layout="@layout/fragment_login" >
+        <action
+            android:id="@+id/action_loginFragment_to_registrarFragment"
+            app:destination="@id/registrarFragment" />
+        <action
+            android:id="@+id/action_loginFragment_to_firstFragment"
+            app:destination="@id/firstFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/registrarFragment"
+        android:name="com.example.cervecerialaravel.RegistrarFragment"
+        android:label="fragment_registrar"
+        tools:layout="@layout/fragment_registrar" >
+        <action
+            android:id="@+id/action_registrarFragment_to_loginFragment"
+            app:destination="@id/loginFragment" />
+    </fragment>
 </navigation>

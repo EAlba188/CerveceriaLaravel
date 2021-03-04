@@ -1,6 +1,7 @@
 package com.example.cervecerialaravel.viewmodel;
 
 import android.app.Application;
+import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
@@ -30,6 +31,13 @@ public class ViewModel extends AndroidViewModel {
         repository.getCervezaConcreta(id);
     }
 
+    public void login(String user, String pass, View v) {
+        repository.login(user, pass, v);
+    }
+
+    public void Register(String user, String pass, View v) {
+        repository.Register(user, pass, v);
+    }
 
     public void vender(long id) {
         repository.vender(id);
@@ -65,6 +73,10 @@ public class ViewModel extends AndroidViewModel {
 
     public void deleteCerveza(long id) {
         repository.deleteCerveza(id);
+    }
+
+    public void existeBeer(long id, Cerveza cerveza) {
+        repository.existeBeer(id, cerveza);
     }
 
     public void getAllCervezas() {

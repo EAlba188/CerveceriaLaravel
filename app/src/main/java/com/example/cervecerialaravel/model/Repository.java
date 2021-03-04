@@ -2,17 +2,35 @@ package com.example.cervecerialaravel.model;
 
 import android.content.Context;
 import android.util.Log;
+import android.view.View;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.ViewModel;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
 
 import com.example.cervecerialaravel.FirstFragment;
+import com.example.cervecerialaravel.R;
 import com.example.cervecerialaravel.entity.Cerveza;
 import com.example.cervecerialaravel.entity.Venta;
-import com.example.cervecerialaravel.model.client.CervezaClient;
-import com.example.cervecerialaravel.model.client.VentasClient;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FieldValue;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.firestore.SetOptions;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -21,178 +39,203 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 public class Repository {
-    private CervezaClient cervezaClient;
-    private VentasClient ventasClient;
     MutableLiveData<List<Cerveza>> listMutableLiveDataCerveza = new MutableLiveData<>();
     MutableLiveData<List<Venta>> listMutableLiveDataVentas = new MutableLiveData<>();
     MutableLiveData<Long> idInsertBeer = new MutableLiveData<>();
     MutableLiveData<Cerveza> devolverBeer = new MutableLiveData<>();
     Cerveza cervezaConcreta;
     Cerveza savedBeer;
-
+    FirebaseFirestore db = FirebaseFirestore.getInstance();
+    FirebaseAuth firebaseAuth;
 
 
     public Repository() {
-        Retrofit retrofit = new Retrofit.Builder().baseUrl("https://informatica.ieszaidinvergeles.org:9021/laraveles/cerveceria2/public/api/").addConverterFactory(GsonConverterFactory.create()).build();
-        cervezaClient = retrofit.create(CervezaClient.class);
+        firebaseAuth = FirebaseAuth.getInstance();
+    }
 
-        Retrofit retrofit2 = new Retrofit.Builder().baseUrl("https://informatica.ieszaidinvergeles.org:9021/laraveles/ventas/public/api/").addConverterFactory(GsonConverterFactory.create()).build();
-        ventasClient = retrofit2.create(VentasClient.class);
+    public void login(String user, String pass, View v){
+        if(user.equalsIgnoreCase("") || pass.equalsIgnoreCase("")){
+            Toast.makeText(v.getContext(), "Campos vacios", Toast.LENGTH_SHORT).show();
+        }else{
+            firebaseAuth.signInWithEmailAndPassword(user,pass)
+                .addOnSuccessListener(new OnSuccessListener<AuthResult>() {
+                    @Override
+                    public void onSuccess(AuthResult authResult) {
+                        NavController navController = Navigation.findNavController(v);
+                        navController.navigate(R.id.firstFragment);
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Toast.makeText(v.getContext(), "Error", Toast.LENGTH_SHORT).show();
+                    }
+                });
+        }
 
+    }
+
+    public void Register(String user, String pass, View v){
+
+        if(user.equalsIgnoreCase("") || pass.equalsIgnoreCase("")){
+            Toast.makeText(v.getContext(), "Campos vacios", Toast.LENGTH_SHORT).show();
+        }else{
+            firebaseAuth.createUserWithEmailAndPassword(user,pass)
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.v("zxc", e.getLocalizedMessage());
+                        Toast.makeText(v.getContext(), "Error", Toast.LENGTH_SHORT).show();
+                    }
+                });
+        }
     }
 
     public void getCervezaConcreta(long id){
-        Call<Cerveza> call = cervezaClient.getCerveza(id);
-        call.enqueue(new Callback<Cerveza>() {
-            @Override
-            public void onResponse(Call<Cerveza> call, Response<Cerveza> response) {
-                devolverBeer.postValue(response.body());
-            }
 
-            @Override
-            public void onFailure(Call<Cerveza> call, Throwable t) {
-            }
-        });
-    }
+        db.collection("user/"+firebaseAuth.getCurrentUser().getUid()+"/cervezas")
+                .document(id+"")
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if(task.isSuccessful()){
+                            devolverBeer.postValue(task.getResult().toObject(Cerveza.class));
+                        }
+                    }
+                });
+
+    }       ///////////////////////////
 
     public MutableLiveData<Cerveza> getUrl() {
         return devolverBeer;
-    }
+    }   //////////////??
 
     public void getAllVentas(){
-        Call<List<Venta>> call = ventasClient.getVenta();
-        call.enqueue(new Callback<List<Venta>>() {
-            @Override
-            public void onResponse(Call<List<Venta>> call, Response<List<Venta>> response) {
-                listMutableLiveDataVentas.setValue(response.body());
-            }
 
-
-            @Override
-            public void onFailure(Call<List<Venta>> call, Throwable t) {
-            }
-        });
-    }
+        db.collection("user/"+firebaseAuth.getCurrentUser().getUid()+"/ventas")
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        if(task.isSuccessful()){
+                            listMutableLiveDataVentas.setValue(task.getResult().toObjects(Venta.class));
+                        }else{
+                            listMutableLiveDataVentas.setValue(null);
+                        }
+                    }
+                });
+    }       //////////////
 
     public void borrarVenta(long id){
-        Call<Long> call = ventasClient.deleteVenta(id);
-        call.enqueue(new Callback<Long>() {
-            @Override
-            public void onResponse(Call<Long> call, Response<Long> response) {
-
-            }
-
-            @Override
-            public void onFailure(Call<Long> call, Throwable t) {
-            }
-        });
+        db.collection("user/"+firebaseAuth.getCurrentUser().getUid()+"/ventas")
+                .document(id+"")
+                .delete();
     }
 
     public void venderCerveza(long id){
-        Venta venta = new Venta(0,id);
-        Call<Long> call = ventasClient.postVenta(venta);
-        call.enqueue(new Callback<Long>() {
-            @Override
-            public void onResponse(Call<Long> call, Response<Long> response) {
-            }
 
-            @Override
-            public void onFailure(Call<Long> call, Throwable t) {
-            }
-        });
-
-    }
+    }   //////////////
 
     public void vender(long id){
-        Call<Cerveza> call = cervezaClient.getCerveza(id);
-        call.enqueue(new Callback<Cerveza>() {
-            @Override
-            public void onResponse(Call<Cerveza> call, Response<Cerveza> response) {
-                cervezaConcreta = response.body();
+       db.collection("user/"+firebaseAuth.getCurrentUser().getUid()+"/cervezas").document(id+"").get()
+       .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+           @Override
+           public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+               if(task.isSuccessful()){
+                   Cerveza cerveza = task.getResult().toObject(Cerveza.class);
+                   if(cerveza.getAmount()>0){
+                       Venta venta = new Venta(cerveza.getId());
+                       db.collection("user/"+firebaseAuth.getCurrentUser().getUid()+"/ventas")
+                               .document(venta.getId()+"")
+                                .set(venta);
 
-                if (cervezaConcreta.getAmount()>0){
-                    int i = cervezaConcreta.getAmount();
-                    i--;
-                    cervezaConcreta.setAmount(i);
-                    updateCerveza(id, cervezaConcreta);
-                    venderCerveza(id);
-                }
+                       cerveza.setAmount(cerveza.getAmount()-1);
 
-            }
+                       updateCerveza(cerveza.getId(), cerveza);
 
-            @Override
-            public void onFailure(Call<Cerveza> call, Throwable t) {
-            }
-        });
-    }
+                   }
+               }
+           }
+
+
+
+       });
+
+        //hay mas de 1?
+        //inserta venta
+        // si tiene exito resta una
+
+    }       /////////////
 
     public Cerveza getSavedBeer() {
         return savedBeer;
-    }
+    }   /////////////////
 
     public void setSavedBeer(Cerveza savedBeer) {
         this.savedBeer = savedBeer;
-    }
+    }   ////////////////
 
     public void updateCerveza(long id, Cerveza cerveza){
-        Call<Integer> call = cervezaClient.putCerveza(id, cerveza);
-        call.enqueue(new Callback<Integer>() {
-            @Override
-            public void onResponse(Call<Integer> call, Response<Integer> response) {
+        db.collection("user/"+firebaseAuth.getCurrentUser().getUid()+"/cervezas")
+            .document(id+"")
+            .set(cerveza, SetOptions.merge());
 
-            }
-
-            @Override
-            public void onFailure(Call<Integer> call, Throwable t) {
-
-            }
-        });
-    }
+    }    ////////////////////////
 
     public void deleteCerveza(long id){
-        Call<Long> call = cervezaClient.deleteCerveza(id);
-        call.enqueue(new Callback<Long>() {
-            @Override
-            public void onResponse(Call<Long> call, Response<Long> response) {
-                idInsertBeer.postValue(response.body());
+        db.collection("user/"+firebaseAuth.getCurrentUser().getUid()+"/cervezas").document(id+"").delete();
 
-            }
-
-            @Override
-            public void onFailure(Call<Long> call, Throwable t) {
-            }
-        });
-    }
+    }       /////////////////////////////////////////////
 
     public void getAllCervezas(){
-        Call<List<Cerveza>> call = cervezaClient.getCerveza();
-        call.enqueue(new Callback<List<Cerveza>>() {
-            @Override
-            public void onResponse(Call<List<Cerveza>> call, Response<List<Cerveza>> response) {
-                listMutableLiveDataCerveza.setValue(response.body());
-            }
 
+        db.collection("user/"+firebaseAuth.getCurrentUser().getUid()+"/cervezas")
+            .get()
+            .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                @Override
+                public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                    if(task.isSuccessful()){
+                        listMutableLiveDataCerveza.setValue(task.getResult().toObjects(Cerveza.class));
+                    }else{
 
-            @Override
-            public void onFailure(Call<List<Cerveza>> call, Throwable t) {
-            }
-        });
-    }
+                    }
+                }
+            });
+    }           ///////////////////////////////////
 
     public void insertCerveza(Cerveza cerveza){
-        Call<Long> call = cervezaClient.postCerveza(cerveza);
-        call.enqueue(new Callback<Long>() {
-            @Override
-            public void onResponse(Call<Long> call, Response<Long> response) {
-                idInsertBeer.setValue(response.body());
-            }
+        db.collection("user/"+firebaseAuth.getCurrentUser().getUid()+"/cervezas")
+                .document(cerveza.getId()+"")
+                .set(cerveza)
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Log.v("zxc", "INSERTAR BIEN");
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.v("zxc", "INSERTAR ERROR");
+                    }
+                });
+    }   ///////////////////////////////////////////////////
 
-            @Override
-            public void onFailure(Call<Long> call, Throwable t) {
-            }
-        });
-    }
+    public void existeBeer(long id, Cerveza cerveza){
 
+        db.collection("user/"+firebaseAuth.getCurrentUser().getUid()+"/cervezas")
+                .document(id+"")
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if(!task.getResult().exists()){
+                            insertCerveza(cerveza);
+                        }
+                    }
+                });
+    }           //NO ENTIENDO
 
     public MutableLiveData<Long> getIdInsertBeer() {
         return idInsertBeer;

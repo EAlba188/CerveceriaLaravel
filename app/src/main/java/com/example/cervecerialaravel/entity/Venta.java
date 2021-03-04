@@ -7,19 +7,15 @@ import java.sql.Time;
 import java.sql.Timestamp;
 
 public class Venta {
+    private long id, idCerveza;
+    private static int increment = 0;
 
-    @SerializedName("id")
-    @Expose
-    private long id;
-
-    @SerializedName("idCerveza")
-    @Expose
-    private long idCerveza;
-
-
-    public Venta(long id, long idCerveza) {
-        this.id = id;
+    public Venta(long idCerveza) {
+        this.id = ++increment;
         this.idCerveza = idCerveza;
+    }
+
+    public Venta() {
     }
 
     public long getId() {

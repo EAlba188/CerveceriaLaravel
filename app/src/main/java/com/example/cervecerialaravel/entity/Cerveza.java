@@ -5,33 +5,11 @@ import com.google.gson.annotations.SerializedName;
 
 public class Cerveza {
 
-    @SerializedName("id")
-    @Expose
     private long id;
-
-    @SerializedName("picture")
-    @Expose
-    private String picture;
-
-    @SerializedName("brand")
-    @Expose
-    private String brand;
-
-    @SerializedName("price")
-    @Expose
+    private String picture, brand, type, location;
     private double price;
-
-    @SerializedName("type")
-    @Expose
-    private String type;
-
-    @SerializedName("amount")
-    @Expose
     private int amount;
 
-    @SerializedName("location")
-    @Expose
-    private String location;
 
     public Cerveza(long id, String url, String brand, double price, String type, int amount, String location) {
         this.id = id;

@@ -25,6 +25,7 @@ public class InsertFragment extends Fragment {
     private TextView cantidad;
     private TextView localizacion;
     private TextView marca;
+    private TextView ID;
     private Button atras;
     private Button guardar;
     private NavController navController;
@@ -41,6 +42,7 @@ public class InsertFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        ID = view.findViewById(R.id.etID);
         url = view.findViewById(R.id.etUrl);
         precio = view.findViewById(R.id.etPrice);
         tipo = view.findViewById(R.id.etType);
@@ -57,7 +59,7 @@ public class InsertFragment extends Fragment {
         guardar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Cerveza cerveza = new Cerveza(-1,
+                Cerveza cerveza = new Cerveza(Integer.parseInt(ID.getText().toString()),
                         url.getText().toString(),
                         marca.getText().toString(),
                         Double.valueOf(precio.getText().toString()),
@@ -65,7 +67,7 @@ public class InsertFragment extends Fragment {
                         Integer.parseInt(cantidad.getText().toString()),
                         localizacion.getText().toString()
                         );
-                viewModel.insertCerveza(cerveza);
+                viewModel.existeBeer(Integer.parseInt(ID.getText().toString()),cerveza);
                 navController.navigate(R.id.firstFragment);
             }
         });
